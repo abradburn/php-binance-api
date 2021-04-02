@@ -2298,7 +2298,7 @@ class API
           'h' => 'high',
           'l' => 'low',
           'v' => 'volume',
-          'n' => 'numTrades',
+          'n' => 'trades',
           'x' => 'closed',
           'q' => 'quoteVolume',
           'V' => 'assetBuyVolume',
