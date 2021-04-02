@@ -2309,8 +2309,8 @@ class API
         foreach ($symbols as $symbol) {
             $endpoint = strtolower($symbol) . '@kline_' . $interval;
             $this->subscriptions[$endpoint] = true;
-            $connector($this->getWsEndpoint() . $endpoint)->then(function ($ws) use ($callback, $symbol, $loop, $endpoint, $interval) {
-                $ws->on('message', function ($data) use ($ws, $loop, $callback, $endpoint) {
+            $connector($this->getWsEndpoint() . $endpoint)->then(function ($ws) use ($callback, $symbol, $loop, $endpoint, $interval, $dataMapping) {
+                $ws->on('message', function ($data) use ($ws, $loop, $callback, $endpoint, $dataMapping) {
                     if ($this->subscriptions[$endpoint] === false) {
                         $loop->stop();
                         return;
