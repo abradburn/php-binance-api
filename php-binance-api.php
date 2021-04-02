@@ -2286,7 +2286,7 @@ class API
         $react = new \React\Socket\Connector($loop);
         $connector = new \Ratchet\Client\Connector($loop, $react);
 
-        $dataMapping = 
+        $dataMapping = [
           't' => 'openTime',
           'T' => 'closeTime',
           's' => 'symbol',
