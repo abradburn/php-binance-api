@@ -1295,6 +1295,7 @@ class API
 
     /**
      * candlesticks get the candles for the given intervals
+     * https://github.com/binance/binance-spot-api-docs/blob/master/rest-api.md#klinecandlestick-data
      * 1m,3m,5m,15m,30m,1h,2h,4h,6h,8h,12h,1d,3d,1w,1M
      *
      * $candles = $api->candlesticks("BNBBTC", "5m");
@@ -1516,6 +1517,28 @@ class API
             "orderTime" => $json->T,
             "eventTime" => $json->E,
         ];
+    }
+
+    /**
+     * mapData Map single character array keys provided by the Binance API to more verbose keys.
+     *
+     * $array = $this->mapData($data);
+     *
+     * @param $data array, candle, tick, etc.
+     */
+    protected function mapData(array &$map, array &$data): array
+    {
+      $mapped = [];
+
+      foreach($data as $key => $value){
+        if(isset($map[$key])){
+          $mapped[$map[$key]] = $value;
+        }else{
+          $mapped[$key] = $value;
+        }
+      }
+
+      return $mapped;
     }
 
     /**
@@ -2262,6 +2285,27 @@ class API
         $loop = \React\EventLoop\Factory::create();
         $react = new \React\Socket\Connector($loop);
         $connector = new \Ratchet\Client\Connector($loop, $react);
+
+        $dataMapping = 
+          't' => 'openTime',
+          'T' => 'closeTime',
+          's' => 'symbol',
+          'i' => 'interval',
+          'f' => 'firstTradeId',
+          'L' => 'lastTradeId',
+          'o' => 'open',
+          'c' => 'close',
+          'h' => 'high',
+          'l' => 'low',
+          'v' => 'volume',
+          'n' => 'numTrades',
+          'x' => 'closed',
+          'q' => 'quoteVolume',
+          'V' => 'assetBuyVolume',
+          'Q' => 'takerBuyVolume',
+          'B' => 'ignored'
+        ];
+
         foreach ($symbols as $symbol) {
             $endpoint = strtolower($symbol) . '@kline_' . $interval;
             $this->subscriptions[$endpoint] = true;
@@ -2271,10 +2315,10 @@ class API
                         $loop->stop();
                         return;
                     }
-                    $json = json_decode($data);
-                    $chart = $json->k;
-                    $symbol = $json->s;
-                    $interval = $chart->i;
+                    $json = json_decode($data, true);
+                    $chart = $this->mapData($dataMapping, $json['k']);
+                    $symbol = $json['s'];
+                    $interval = $json['k']['i'];
                     call_user_func($callback, $this, $symbol, $chart);
                 });
                 $ws->on('close', function ($code = null, $reason = null) use ($symbol, $loop, $interval) {
