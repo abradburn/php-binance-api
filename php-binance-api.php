@@ -2311,10 +2311,9 @@ class API
             $this->subscriptions[$endpoint] = true;
 
             //$connector($this->getWsEndpoint() . $endpoint)->then(function ($ws) use ($callback, $symbol, $loop, $endpoint, $interval, $dataMapping) {
-            \Ratchet\Client\connect($this->getWsEndpoint() . $endpoint)->then(function ($ws) use ($callback, $symbol, $loop, $endpoint, $interval, $dataMapping) {
-                $ws->on('message', function ($data) use ($ws, $loop, $callback, $endpoint, $dataMapping) {
+            \Ratchet\Client\connect($this->getWsEndpoint() . $endpoint)->then(function ($ws) use ($callback, $symbol, $endpoint, $interval, $dataMapping) {
+                $ws->on('message', function ($data) use ($ws, $callback, $endpoint, $dataMapping) {
                     if ($this->subscriptions[$endpoint] === false) {
-                        $loop->stop();
                         return;
                     }
                     $json = json_decode($data, true);
@@ -2323,15 +2322,13 @@ class API
                     $interval = $json['k']['i'];
                     call_user_func($callback, $this, $symbol, $chart);
                 });
-                $ws->on('close', function ($code = null, $reason = null) use ($symbol, $loop, $interval) {
+                $ws->on('close', function ($code = null, $reason = null) use ($symbol, $interval) {
                     // WPCS: XSS OK.
                     echo "kline({$symbol},{$interval}) WebSocket Connection closed! ({$code} - {$reason})" . PHP_EOL;
-                    $loop->stop();
                 });
-            }, function ($e) use ($loop, $symbol, $interval) {
+            }, function ($e) use ($symbol, $interval) {
                 // WPCS: XSS OK.
                 echo "kline({$symbol},{$interval})) Could not connect: {$e->getMessage()}" . PHP_EOL;
-                $loop->stop();
             });
         }
         //$loop->run();
