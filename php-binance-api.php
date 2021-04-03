@@ -2282,9 +2282,9 @@ class API
             ];
         }
 
-        $loop = \React\EventLoop\Factory::create();
-        $react = new \React\Socket\Connector($loop);
-        $connector = new \Ratchet\Client\Connector($loop, $react);
+        //$loop = \React\EventLoop\Factory::create();
+        //$react = new \React\Socket\Connector($loop);
+        //$connector = new \Ratchet\Client\Connector($loop, $react);
 
         $dataMapping = [
           't' => 'openTime',
@@ -2309,7 +2309,9 @@ class API
         foreach ($symbols as $symbol) {
             $endpoint = strtolower($symbol) . '@kline_' . $interval;
             $this->subscriptions[$endpoint] = true;
-            $connector($this->getWsEndpoint() . $endpoint)->then(function ($ws) use ($callback, $symbol, $loop, $endpoint, $interval, $dataMapping) {
+
+            //$connector($this->getWsEndpoint() . $endpoint)->then(function ($ws) use ($callback, $symbol, $loop, $endpoint, $interval, $dataMapping) {
+            \Ratchet\Client\connect($this->getWsEndpoint() . $endpoint)->then(function ($ws) use ($callback, $symbol, $loop, $endpoint, $interval, $dataMapping) {
                 $ws->on('message', function ($data) use ($ws, $loop, $callback, $endpoint, $dataMapping) {
                     if ($this->subscriptions[$endpoint] === false) {
                         $loop->stop();
