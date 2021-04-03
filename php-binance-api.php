@@ -2334,7 +2334,7 @@ class API
                 $loop->stop();
             });
         }
-        $loop->run();
+        //$loop->run();
     }
 
     /**
