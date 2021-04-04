@@ -27,7 +27,7 @@ if (version_compare(phpversion(), '7.0', '<=')) {
  * require 'vendor/autoload.php';
  * $api = new Binance\\API();
  */
-class API
+class API extends BinanceAPI
 {
     protected $base = 'https://api.binance.us/api/'; // /< REST endpoint for the currency exchange
     protected $baseTestnet = 'https://testnet.binance.vision/api/'; // /< Testnet REST endpoint for the currency exchange
@@ -2308,6 +2308,8 @@ class API
           'Q' => 'takerBuyVolume',
           'B' => 'ignored'
         ];
+
+print_r($this->wsKlineMapping);
 
         foreach ($symbols as $symbol) {
             $endpoint = strtolower($symbol) . '@kline_' . $interval;
