@@ -13,7 +13,6 @@
 namespace Binance;
 
 use Exception;
-use BinanceAPI;
 
 // PHP version check
 if (version_compare(phpversion(), '7.0', '<=')) {
@@ -2290,40 +2289,19 @@ class API extends BinanceAPI
         $react = new \React\Socket\Connector($loop);
         $connector = new \Ratchet\Client\Connector($loop, $react);
 
-        $dataMapping = [
-          't' => 'openTime',
-          'T' => 'closeTime',
-          's' => 'symbol',
-          'i' => 'interval',
-          'f' => 'firstTradeId',
-          'L' => 'lastTradeId',
-          'o' => 'open',
-          'c' => 'close',
-          'h' => 'high',
-          'l' => 'low',
-          'v' => 'volume',
-          'n' => 'trades',
-          'x' => 'closed',
-          'q' => 'quoteVolume',
-          'V' => 'assetBuyVolume',
-          'Q' => 'takerBuyVolume',
-          'B' => 'ignored'
-        ];
-
-print_r($this->wsKlineMapping);
 
         foreach ($symbols as $symbol) {
             $endpoint = strtolower($symbol) . '@kline_' . $interval;
             $this->subscriptions[$endpoint] = true;
 
-            $connector($this->getWsEndpoint() . $endpoint)->then(function ($ws) use ($callback, $symbol, $loop, $endpoint, $interval, $dataMapping) {
-                $ws->on('message', function ($data) use ($ws, $loop, $callback, $endpoint, $dataMapping) {
+            $connector($this->getWsEndpoint() . $endpoint)->then(function ($ws) use ($callback, $symbol, $loop, $endpoint, $interval) {
+                $ws->on('message', function ($data) use ($ws, $loop, $callback, $endpoint) {
                     if ($this->subscriptions[$endpoint] === false) {
                         $loop->stop();
                         return;
                     }
                     $json = json_decode($data, true);
-                    $chart = $this->mapData($dataMapping, $json['k']);
+                    $chart = $this->mapData($this->wsKlineMapping, $json['k']);
                     $symbol = $json['s'];
                     $interval = $json['k']['i'];
                     call_user_func($callback, $this, $symbol, $chart);
