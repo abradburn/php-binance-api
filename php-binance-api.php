@@ -13,6 +13,7 @@
 namespace Binance;
 
 use Exception;
+use BinanceAPI;
 
 // PHP version check
 if (version_compare(phpversion(), '7.0', '<=')) {
