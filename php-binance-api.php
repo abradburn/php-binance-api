@@ -2271,7 +2271,7 @@ class API
      * @return null
      * @throws \Exception
      */
-    public function kline($symbols, string $interval = "30m", callable $callback = null)
+    public function kline($symbols, string $interval = "30m", callable $callback = null, $loop = null)
     {
         if (is_null($callback)) {
             throw new Exception("You must provide a valid callback");
@@ -2282,9 +2282,12 @@ class API
             ];
         }
 
-        //$loop = \React\EventLoop\Factory::create();
-        //$react = new \React\Socket\Connector($loop);
-        //$connector = new \Ratchet\Client\Connector($loop, $react);
+        if(is_null($loop)){
+          $loop = \React\EventLoop\Factory::create();
+        }
+
+        $react = new \React\Socket\Connector($loop);
+        $connector = new \Ratchet\Client\Connector($loop, $react);
 
         $dataMapping = [
           't' => 'openTime',
@@ -2310,10 +2313,10 @@ class API
             $endpoint = strtolower($symbol) . '@kline_' . $interval;
             $this->subscriptions[$endpoint] = true;
 
-            //$connector($this->getWsEndpoint() . $endpoint)->then(function ($ws) use ($callback, $symbol, $loop, $endpoint, $interval, $dataMapping) {
-            \Ratchet\Client\connect($this->getWsEndpoint() . $endpoint)->then(function ($ws) use ($callback, $symbol, $endpoint, $interval, $dataMapping) {
-                $ws->on('message', function ($data) use ($ws, $callback, $endpoint, $dataMapping) {
+            $connector($this->getWsEndpoint() . $endpoint)->then(function ($ws) use ($callback, $symbol, $loop, $endpoint, $interval, $dataMapping) {
+                $ws->on('message', function ($data) use ($ws, $loop, $callback, $endpoint, $dataMapping) {
                     if ($this->subscriptions[$endpoint] === false) {
+                        $loop->stop();
                         return;
                     }
                     $json = json_decode($data, true);
@@ -2322,13 +2325,15 @@ class API
                     $interval = $json['k']['i'];
                     call_user_func($callback, $this, $symbol, $chart);
                 });
-                $ws->on('close', function ($code = null, $reason = null) use ($symbol, $interval) {
+                $ws->on('close', function ($code = null, $reason = null) use ($symbol, $loop, $interval) {
                     // WPCS: XSS OK.
                     echo "kline({$symbol},{$interval}) WebSocket Connection closed! ({$code} - {$reason})" . PHP_EOL;
+                    $loop->stop();
                 });
-            }, function ($e) use ($symbol, $interval) {
+            }, function ($e) use ($loop, $symbol, $interval) {
                 // WPCS: XSS OK.
                 echo "kline({$symbol},{$interval})) Could not connect: {$e->getMessage()}" . PHP_EOL;
+                $loop->stop();
             });
         }
         //$loop->run();
