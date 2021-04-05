@@ -1466,6 +1466,7 @@ class API extends BinanceAPI
      */
     protected function tickerStreamHandler(\stdClass $json)
     {
+        //wsTickerMapping
         return [
             "eventType" => $json->e,
             "eventTime" => $json->E,
@@ -1503,6 +1504,7 @@ class API extends BinanceAPI
      */
     protected function executionHandler(\stdClass $json)
     {
+      //wsExecutionMapping
         return [
             "symbol" => $json->s,
             "side" => $json->S,
@@ -1564,6 +1566,7 @@ class API extends BinanceAPI
         $output = [];
         foreach ($ticks as $tick) {
             list($openTime, $open, $high, $low, $close, $assetVolume, $closeTime, $baseVolume, $trades, $assetBuyVolume, $takerBuyVolume, $ignored) = $tick;
+        // candleMapping
             $output[$openTime] = [
                 "open" => $open,
                 "high" => $high,
@@ -2413,13 +2416,13 @@ class API extends BinanceAPI
                     $ws->close();
                     return; //return $ws->close();
                 }
-                $json = json_decode($data);
-                $type = $json->e;
+                $json = json_decode($data, true);
+                $type = $json['e'];
                 if ($type === "outboundAccountInfo") {
-                    $balances = $this->balanceHandler($json->B);
+                    $balances = $this->balanceHandler($json['B']);
                     $this->info['balanceCallback']($this, $balances);
                 } elseif ($type === "executionReport") {
-                    $report = $this->executionHandler($json);
+                    $report = $this->mapData($this->executionMapping, $json);
                     if ($this->info['executionCallback']) {
                         $this->info['executionCallback']($this, $report);
                     }
