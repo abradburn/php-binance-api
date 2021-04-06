@@ -29,11 +29,12 @@ if (version_compare(phpversion(), '7.0', '<=')) {
  */
 class API extends BinanceAPI
 {
-    protected $base = 'https://api.binance.us/api/'; // /< REST endpoint for the currency exchange
+    protected $topLevelDomain = 'com';
+    protected $base = 'https://api.binance.[TLD]/api/'; // /< REST endpoint for the currency exchange
+    protected $wapi = 'https://api.binance.[TLD]/wapi/'; // /< REST endpoint for the withdrawals
+    protected $sapi = 'https://api.binance.[TLD]/sapi/'; // /< REST endpoint for the supporting network API
+    protected $stream = 'wss://stream.binance.[TLD]:9443/ws/'; // /< Endpoint for establishing websocket connections
     protected $baseTestnet = 'https://testnet.binance.vision/api/'; // /< Testnet REST endpoint for the currency exchange
-    protected $wapi = 'https://api.binance.us/wapi/'; // /< REST endpoint for the withdrawals
-    protected $sapi = 'https://api.binance.us/sapi/'; // /< REST endpoint for the supporting network API
-    protected $stream = 'wss://stream.binance.us:9443/ws/'; // /< Endpoint for establishing websocket connections
     protected $streamTestnet = 'wss://testnet.binance.vision/ws/'; // /< Testnet endpoint for establishing websocket connections
     protected $api_key; // /< API key that you created in the binance website member area
     protected $api_secret; // /< API secret that was given to you when you created the api key
@@ -125,6 +126,21 @@ class API extends BinanceAPI
     public function __set(string $member, $value)
     {
         $this->$member = $value;
+    }
+
+    public function setTLD(string $tld)
+    {
+      switch($tld){
+        case 'us':
+          $this->topLevelDomain = 'us';
+          break;
+        case 'com':
+          $this->topLevelDomain = 'com';
+          break;
+        default:
+          return false;
+      }
+      return true;
     }
 
     /**
@@ -1103,7 +1119,7 @@ class API extends BinanceAPI
                     throw new \Exception("wapi endpoints are not available in testnet");
                 }
                 unset($params['wapi']);
-                $base = $this->wapi;
+                $base = $this->getWithdrawalEndpoint();
             }
         
             if (isset($params['sapi'])) {
@@ -1111,7 +1127,7 @@ class API extends BinanceAPI
                     throw new \Exception("sapi endpoints are not available in testnet");
                 }
                 unset($params['sapi']);
-                $base = $this->sapi;
+                $base = $this->getSupportEndpoint();
             }
         
             $query = http_build_query($params, '', '&');
@@ -2615,12 +2631,22 @@ class API extends BinanceAPI
 
     private function getRestEndpoint() : string
     {
-        return $this->useTestnet ? $this->baseTestnet : $this->base;
+        return $this->useTestnet ? $this->baseTestnet : str_replace('[TLD]', $this->topLevelDomain, $this->base);
     }
 
     private function getWsEndpoint() : string
     {
-        return $this->useTestnet ? $this->streamTestnet : $this->stream;
+        return $this->useTestnet ? $this->streamTestnet : str_replace('[TLD]', $this->topLevelDomain, $this->stream);
+    }
+
+    private function getWithdrawalEndpoint() : string
+    {
+        return str_replace('[TLD]', $this->topLevelDomain, $this->wapi);
+    }
+
+    private function getSupportEndpoint() : string
+    {
+        return str_replace('[TLD]', $this->topLevelDomain, $this->sapi);
     }
 
     public function isOnTestnet() : bool
