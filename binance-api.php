@@ -26,7 +26,7 @@ abstract class BinanceAPI
     'B' => 'ignored'
   ];
 
-  protected wsTickerMapping = [
+  protected $wsTickerMapping = [
     'e' => 'eventType',
     'E' => 'eventTime',
     's' => 'symbol',
@@ -52,7 +52,7 @@ abstract class BinanceAPI
     'n' => 'numTrades'
   ];
 
-  protected wsExecutionMapping = [
+  protected $wsExecutionMapping = [
     's' => 'symbol',
     'S' => 'side',
     'o' => 'orderType',
@@ -67,7 +67,7 @@ abstract class BinanceAPI
     'E' => 'eventTime'
   ];
 
-  protected candleMapping = [
+  protected $candleMapping = [
     0 => 'openTime',
     1 => 'open',
     2 => 'high',
