@@ -2087,7 +2087,7 @@ class API extends BinanceAPI
      * @param $callback callable closure
      * @return null
      */
-    public function trades($symbols, callable $callback, $loopi = null)
+    public function trades($symbols, callable $callback, $loop = null)
     {
         if (!is_array($symbols)) {
             $symbols = [
