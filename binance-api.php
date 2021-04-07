@@ -67,7 +67,7 @@ abstract class BinanceAPI
     'E' => 'eventTime'
   ];
 
-  protected $wsTrade = [
+  protected $wsTradeMapping = [
     'e' => 'eventType',
     'E' => 'eventTime',
     's' => 'symbol',

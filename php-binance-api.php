@@ -2115,7 +2115,7 @@ class API extends BinanceAPI
             $endpoint = strtolower($symbol) . '@trades';
             $this->subscriptions[$endpoint] = true;
 
-            $connector($this->getWsEndpoint() . strtolower($symbol) . '@aggTrade')->then(function ($ws) use ($callback, $symbol, $loop, $endpoint) {
+            $connector($this->getWsEndpoint() . strtolower($symbol) . '@trade')->then(function ($ws) use ($callback, $symbol, $loop, $endpoint) {
                 $ws->on('message', function ($data) use ($ws, $callback, $loop, $endpoint) {
                     if ($this->subscriptions[$endpoint] === false) {
                         //$this->subscriptions[$endpoint] = null;
