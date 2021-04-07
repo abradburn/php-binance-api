@@ -2087,7 +2087,7 @@ class API extends BinanceAPI
      * @param $callback callable closure
      * @return null
      */
-    public function trades($symbols, callable $callback)
+    public function trades($symbols, callable $callback, $loopi = null)
     {
         if (!is_array($symbols)) {
             $symbols = [
@@ -2095,9 +2095,16 @@ class API extends BinanceAPI
             ];
         }
 
-        $loop = \React\EventLoop\Factory::create();
+        $self_initialized = false;
+
+        if(is_null($loop)){
+          $self_initialized = true;
+          $loop = \React\EventLoop\Factory::create();
+        }
+
         $react = new \React\Socket\Connector($loop);
         $connector = new \Ratchet\Client\Connector($loop, $react);
+
         foreach ($symbols as $symbol) {
             if (!isset($this->info[$symbol])) {
                 $this->info[$symbol] = [];
@@ -2141,7 +2148,10 @@ class API extends BinanceAPI
                 $loop->stop();
             });
         }
-        $loop->run();
+
+        if($self_initialized){
+          $loop->run();
+        }
     }
 
     /**
@@ -2301,7 +2311,10 @@ class API extends BinanceAPI
             ];
         }
 
+        $self_initialized = false;
+
         if(is_null($loop)){
+          $self_initialized = true;
           $loop = \React\EventLoop\Factory::create();
         }
 
@@ -2336,7 +2349,10 @@ class API extends BinanceAPI
                 $loop->stop();
             });
         }
-        //$loop->run();
+
+        if($self_initialized){
+          $loop->run();
+        }
     }
 
     /**
