@@ -67,6 +67,20 @@ abstract class BinanceAPI
     'E' => 'eventTime'
   ];
 
+  protected $wsTrade = [
+    'e' => 'eventType',
+    'E' => 'eventTime',
+    's' => 'symbol',
+    't' => 'tradeId',
+    'p' => 'price',
+    'q' => 'quantity',
+    'b' => 'buyerOrderId',
+    'a' => 'sellerOrderId',
+    'T' => 'tradeTime',
+    'm' => 'maker',
+    'M' => 'ignored'
+  ];
+
   protected $candleMapping = [
     0 => 'openTime',
     1 => 'open',

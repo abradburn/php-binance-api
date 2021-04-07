@@ -2124,16 +2124,7 @@ class API extends BinanceAPI
                     }
                     $json = json_decode($data, true);
                     $symbol = $json['s'];
-                    $price = $json['p'];
-                    $quantity = $json['q'];
-                    $timestamp = $json['T'];
-                    $maker = $json['m'] ? 'true' : 'false';
-                    $trades = [
-                        "price" => $price,
-                        "quantity" => $quantity,
-                        "timestamp" => $timestamp,
-                        "maker" => $maker,
-                    ];
+                    $trades = $this->mapData($this->wsTradeMapping, $json);
                     // $this->info[$symbol]['tradesCallback']($this, $symbol, $trades);
                     call_user_func($callback, $this, $symbol, $trades);
                 });
