@@ -1101,6 +1101,7 @@ class API extends BinanceAPI
         curl_setopt($curl, CURLOPT_VERBOSE, $this->httpDebug);
         $query = http_build_query($params, '', '&');
 
+echo $this->getRestEndpoint() . $url . '?' . $query . "\r\n";
         // signed with params
         if ($signed === true) {
             if (empty($this->api_key)) {
@@ -1131,6 +1132,7 @@ class API extends BinanceAPI
             }
         
             $query = http_build_query($params, '', '&');
+echo $this->getRestEndpoint() . $url . '?' . $query . "\r\n";
             $signature = hash_hmac('sha256', $query, $this->api_secret);
             if ($method === "POST") {
                 $endpoint = $base . $url;
@@ -1145,7 +1147,6 @@ class API extends BinanceAPI
                 'X-MBX-APIKEY: ' . $this->api_key,
             ));
         }
-echo $this->getRestEndpoint() . $url . '?' . $query . "\r\n";
         // params so buildquery string and append to url
         elseif (count($params) > 0) {
             curl_setopt($curl, CURLOPT_URL, $this->getRestEndpoint() . $url . '?' . $query);
