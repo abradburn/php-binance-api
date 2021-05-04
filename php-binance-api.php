@@ -1233,7 +1233,7 @@ echo $this->getRestEndpoint() . $url . '?' . $query . "\r\n";
             // should always output error, not only on httpdebug
             // not outputing errors, hides it from users and ends up with tickets on github
 // Temporary inclusion, as I attempt to get more information about the time difference.
-$remtoe_time = $this->time();
+$remote_time = $this->time();
 $local_time = time();
             throw new \Exception('signedRequest error: '.print_r($output, true)."Remote Time: {$remote_time['serverTime']}, Local Time: {$local_time}");
         }
