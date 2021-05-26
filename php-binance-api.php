@@ -2543,7 +2543,7 @@ $local_time = time();
         }
 
         $react = new \React\Socket\Connector($loop);
-        $connector = new \React\Client\Connector($loop, $react);
+        $connector = new \Ratchet\Client\Connector($loop, $react);
 
         if(is_null($symbol)){
           $endpoint = '!bookticker';
