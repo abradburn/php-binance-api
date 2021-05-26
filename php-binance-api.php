@@ -2552,13 +2552,14 @@ $local_time = time();
           $endpoint = strtolower($symbol) . '@bookticker';
           $ws_string = $symbol . '@bookTicker';
         }
-echo $endpoint."\r\n";
-echo $ws_string;
+echo 'Endpoint: '.$endpoint."\r\n";
+echo 'WS String '.$ws_string."\r\n";
         $this->subscriptions[$endpoint] = true;
 
         // @codeCoverageIgnoreStart
         // phpunit can't cover async function
         $connector($this->getWsEndpoint() . $ws_string)->then(function ($ws) use ($callback, $endpoint) {
+echo $this->getWsEndpoint() . $ws_string."\r\n";
             $ws->on('message', function ($data) use ($ws, $callback, $endpoint) {
                 if ($this->subscriptions[$endpoint] === false) {
                     $loop->stop();
