@@ -2027,7 +2027,7 @@ $local_time = time();
 
         if(is_null($loop)){
           $self_initialized = true;
-          $loop = new \React\EventLoop\Factory::create();
+          $loop = \React\EventLoop\Factory::create();
         }
 
         $react = new \React\Socket\Connector($loop);
