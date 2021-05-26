@@ -2107,6 +2107,9 @@ $local_time = time();
      */
     public function trades($symbols, callable $callback, $loop = null)
     {
+        if(is_null($callback)){
+          throw new Exception('You must provide a valid callback');
+        }
         if (!is_array($symbols)) {
             $symbols = [
                 $symbols,
