@@ -2012,18 +2012,28 @@ $local_time = time();
      * @param $callback callable closure
      * @return null
      */
-    public function depthCache($symbols, callable $callback)
+    public function depthCache($symbols, callable $callback, $loop = NULL)
     {
-        if (!is_array($symbols)) {
+        if(is_null($callback)){
+          throw new Exception('You must provide a valid callback.');
+        }
+        if(!is_array($symbols)){
             $symbols = [
                 $symbols,
             ];
         }
 
-        $loop = \React\EventLoop\Factory::create();
+        $self_initialized = false;
+
+        if(is_null($loop)){
+          $self_initialized = true;
+          $loop = new \React\EventLoop\Factory::create();
+        }
+
         $react = new \React\Socket\Connector($loop);
         $connector = new \Ratchet\Client\Connector($loop, $react);
-        foreach ($symbols as $symbol) {
+
+        foreach($symbols as $symbol){
             if (!isset($this->info[$symbol])) {
                 $this->info[$symbol] = [];
             }
@@ -2077,7 +2087,10 @@ $local_time = time();
             $this->depthQueue[$symbol] = [];
             call_user_func($callback, $this, $symbol, $this->depthCache[$symbol]);
         }
-        $loop->run();
+
+        if($self_initialized){
+          $loop->run();
+        }
     }
 
     /**
@@ -2546,24 +2559,20 @@ $local_time = time();
         $connector = new \Ratchet\Client\Connector($loop, $react);
 
         if(is_null($symbol)){
-          $endpoint = '!bookticker';
+          $endpoint = '!bookTicker';
           $ws_string = '!bookTicker';
         }else{
-          $endpoint = strtolower($symbol) . '@bookticker';
+          $endpoint = strtolower($symbol) . '@bookTicker';
           $ws_string = $symbol . '@bookTicker';
         }
-echo 'Endpoint: '.$endpoint."\r\n";
-echo 'WS String '.$ws_string."\r\n";
         $this->subscriptions[$endpoint] = true;
 
         // @codeCoverageIgnoreStart
         // phpunit can't cover async function
-echo $this->getWsEndpoint() . $ws_string."\r\n";
         $connector($this->getWsEndpoint() . $ws_string)->then(function ($ws) use ($callback, $endpoint) {
             $ws->on('message', function ($data) use ($ws, $callback, $endpoint) {
                 if ($this->subscriptions[$endpoint] === false) {
                     $loop->stop();
-                    //$ws->close();
                     return; //return $ws->close();
                 }
                 $json = json_decode($data, true);
