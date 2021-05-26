@@ -2034,6 +2034,8 @@ $local_time = time();
         $connector = new \Ratchet\Client\Connector($loop, $react);
 
         foreach($symbols as $symbol){
+            $symbol = strtolower($symbol);
+
             if (!isset($this->info[$symbol])) {
                 $this->info[$symbol] = [];
             }
@@ -2050,10 +2052,10 @@ $local_time = time();
             }
 
             $this->info[$symbol]['firstUpdate'] = 0;
-            $endpoint = strtolower($symbol) . '@depthCache';
+            $endpoint = $symbol . '@depthCache';
             $this->subscriptions[$endpoint] = true;
 
-            $connector($this->getWsEndpoint() . strtolower($symbol) . '@depth')->then(function ($ws) use ($callback, $symbol, $loop, $endpoint) {
+            $connector($this->getWsEndpoint() . $symbol . '@depth')->then(function ($ws) use ($callback, $symbol, $loop, $endpoint) {
                 $ws->on('message', function ($data) use ($ws, $callback, $loop, $endpoint) {
                     if ($this->subscriptions[$endpoint] === false) {
                         //$this->subscriptions[$endpoint] = null;
@@ -2547,6 +2549,8 @@ $local_time = time();
         if(is_null($callback)){
           throw new Exception('You must provide a valid callback.');
         }
+
+        $symbol = strtolower($symbol);
 
         $self_initialized = false;
 
