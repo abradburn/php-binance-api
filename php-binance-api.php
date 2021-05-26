@@ -2558,8 +2558,8 @@ echo 'WS String '.$ws_string."\r\n";
 
         // @codeCoverageIgnoreStart
         // phpunit can't cover async function
-        $connector($this->getWsEndpoint() . $ws_string)->then(function ($ws) use ($callback, $endpoint) {
 echo $this->getWsEndpoint() . $ws_string."\r\n";
+        $connector($this->getWsEndpoint() . $ws_string)->then(function ($ws) use ($callback, $endpoint) {
             $ws->on('message', function ($data) use ($ws, $callback, $endpoint) {
                 if ($this->subscriptions[$endpoint] === false) {
                     $loop->stop();
