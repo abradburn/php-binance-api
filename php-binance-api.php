@@ -2520,7 +2520,7 @@ $local_time = time();
     }
 
     /**
-     * bookTicker Get bookTicker for all symbols
+     * bookTicker Get bookTicker for a symbol, or all symbols
      *
      * $api->bookTicker(function($api, $ticker) {
      * print_r($ticker);
@@ -2529,14 +2529,22 @@ $local_time = time();
      * @param $callback callable function closer that takes 2 arguments, $api and $ticker data
      * @return null
      */
-    public function bookTicker(callable $callback)
+    public function bookTicker(callable $callback, string $symbol = NULL)
     {
-        $endpoint = '!bookticker';
+        if(isnull($symbol)){
+          $endpoint = '!bookticker';
+          $ws_string = '!bookTicker';
+        }else{
+          $endpoint = strtolower($symbol) . '@bookticker';
+          $ws_string = $symbol . '@bookTicker';
+        }
+echo $endpoint."\r\n";
+echo $ws_string;
         $this->subscriptions[$endpoint] = true;
 
         // @codeCoverageIgnoreStart
         // phpunit can't cover async function
-        \Ratchet\Client\connect($this->getWsEndpoint() . '!bookTicker')->then(function ($ws) use ($callback, $endpoint) {
+        \Ratchet\Client\connect($this->getWsEndpoint() . $ws_string)->then(function ($ws) use ($callback, $endpoint) {
             $ws->on('message', function ($data) use ($ws, $callback, $endpoint) {
                 if ($this->subscriptions[$endpoint] === false) {
                     //$this->subscriptions[$endpoint] = null;
@@ -2544,15 +2552,9 @@ $local_time = time();
                     return; //return $ws->close();
                 }
                 $json = json_decode($data, true);
+//                $symbol = $json['s'];
+                $markets = $this->mapData($this->wsBookTicker, $json);
 
-                $markets = [
-                    "updateId"  => $json['u'],
-                    "symbol"    => $json['s'],
-                    "bid_price" => $json['b'],
-                    "bid_qty"   => $json['B'],
-                    "ask_price" => $json['a'],
-                    "ask_qty"   => $json['A'],
-                ];
                 call_user_func($callback, $this, $markets);
             });
             $ws->on('close', function ($code = null, $reason = null) {

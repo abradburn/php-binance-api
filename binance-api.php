@@ -95,4 +95,13 @@ abstract class BinanceAPI
     10 => 'takerBuyVolume',
     11 => 'ignored'
   ];
+
+  protected $wsBookTicker = [
+    'u' => 'updateId',
+    's' => 'symbol',
+    'b' => 'bid_price',
+    'B' => 'bid_qty',
+    'a' => 'ask_price',
+    'A' => 'ask_qty'
+  ];
 }
