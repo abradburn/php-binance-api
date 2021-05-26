@@ -2529,9 +2529,23 @@ $local_time = time();
      * @param $callback callable function closer that takes 2 arguments, $api and $ticker data
      * @return null
      */
-    public function bookTicker(callable $callback, string $symbol = NULL)
+    public function bookTicker(string $symbol = NULL, callable $callback, $loop = NULL)
     {
-        if(isnull($symbol)){
+        if(is_null($callback)){
+          throw new Exception('You must provide a valid callback.');
+        }
+
+        $self_initialized = false;
+
+        if(is_null($loop)){
+          $self_initialized = true;
+          $loop = \React\EventLoop\Factory::create();
+        }
+
+        $react = new \React\Socket\Connector($loop);
+        $connector = new \React\Client\Connector($loop, $react);
+
+        if(is_null($symbol)){
           $endpoint = '!bookticker';
           $ws_string = '!bookTicker';
         }else{
@@ -2544,28 +2558,33 @@ echo $ws_string;
 
         // @codeCoverageIgnoreStart
         // phpunit can't cover async function
-        \Ratchet\Client\connect($this->getWsEndpoint() . $ws_string)->then(function ($ws) use ($callback, $endpoint) {
+        $connector($this->getWsEndpoint() . $ws_string)->then(function ($ws) use ($callback, $endpoint) {
             $ws->on('message', function ($data) use ($ws, $callback, $endpoint) {
                 if ($this->subscriptions[$endpoint] === false) {
-                    //$this->subscriptions[$endpoint] = null;
-                    $ws->close();
+                    $loop->stop();
+                    //$ws->close();
                     return; //return $ws->close();
                 }
                 $json = json_decode($data, true);
-//                $symbol = $json['s'];
+                $symbol = $json['s'];
                 $markets = $this->mapData($this->wsBookTicker, $json);
-
                 call_user_func($callback, $this, $markets);
             });
-            $ws->on('close', function ($code = null, $reason = null) {
+            $ws->on('close', function ($code = null, $reason = null) use ($symbol, $loop) {
                 // WPCS: XSS OK.
-                echo "miniticker: WebSocket Connection closed! ({$code} - {$reason})" . PHP_EOL;
+                echo "bookticker {$symbol}: WebSocket Connection closed! ({$code} - {$reason})" . PHP_EOL;
+                $loop->stop();
             });
-        }, function ($e) {
+        }, function ($e) use ($symbol, $loop){
             // WPCS: XSS OK.
-            echo "miniticker: Could not connect: {$e->getMessage()}" . PHP_EOL;
+            echo "bookticker {$symbol}: Could not connect: {$e->getMessage()}" . PHP_EOL;
+            $loop->stop();
         });
         // @codeCoverageIgnoreEnd
+
+        if($self_initialized){
+          $loop->run();
+        }
     }
 
     /**
