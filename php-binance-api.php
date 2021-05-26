@@ -2034,8 +2034,6 @@ $local_time = time();
         $connector = new \Ratchet\Client\Connector($loop, $react);
 
         foreach($symbols as $symbol){
-            $symbol = strtolower($symbol);
-
             if (!isset($this->info[$symbol])) {
                 $this->info[$symbol] = [];
             }
@@ -2052,10 +2050,10 @@ $local_time = time();
             }
 
             $this->info[$symbol]['firstUpdate'] = 0;
-            $endpoint = $symbol . '@depthCache';
+            $endpoint = strtolower($symbol) . '@depthCache';
             $this->subscriptions[$endpoint] = true;
 
-            $connector($this->getWsEndpoint() . $symbol . '@depth')->then(function ($ws) use ($callback, $symbol, $loop, $endpoint) {
+            $connector($this->getWsEndpoint() . strtolower($symbol) . '@depth')->then(function ($ws) use ($callback, $symbol, $loop, $endpoint) {
                 $ws->on('message', function ($data) use ($ws, $callback, $loop, $endpoint) {
                     if ($this->subscriptions[$endpoint] === false) {
                         //$this->subscriptions[$endpoint] = null;
@@ -2550,8 +2548,6 @@ $local_time = time();
           throw new Exception('You must provide a valid callback.');
         }
 
-        $symbol = strtolower($symbol);
-
         $self_initialized = false;
 
         if(is_null($loop)){
@@ -2564,16 +2560,14 @@ $local_time = time();
 
         if(is_null($symbol)){
           $endpoint = '!bookTicker';
-          $ws_string = '!bookTicker';
         }else{
           $endpoint = strtolower($symbol) . '@bookTicker';
-          $ws_string = $symbol . '@bookTicker';
         }
         $this->subscriptions[$endpoint] = true;
 
         // @codeCoverageIgnoreStart
         // phpunit can't cover async function
-        $connector($this->getWsEndpoint() . $ws_string)->then(function ($ws) use ($callback, $endpoint) {
+        $connector($this->getWsEndpoint() . $endpoint)->then(function ($ws) use ($callback, $endpoint) {
             $ws->on('message', function ($data) use ($ws, $callback, $endpoint) {
                 if ($this->subscriptions[$endpoint] === false) {
                     $loop->stop();
