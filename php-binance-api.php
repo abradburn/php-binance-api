@@ -2012,7 +2012,7 @@ $local_time = time();
      * @param $callback callable closure
      * @return null
      */
-    public function depthCache($symbols, callable $callback, $loop = NULL)
+    public function depthCache($symbols, callable $callback, &$loop = NULL)
     {
         if(is_null($callback)){
           throw new Exception('You must provide a valid callback.');
@@ -2177,7 +2177,7 @@ $local_time = time();
      * @param $callback callable closure
      * @return null
      */
-    public function ticker($symbols, callable $callback, &$loop = NULL)
+    public function ticker($symbol, callable $callback, &$loop = NULL)
     {
         if(is_null($callback)){
           throw new Exception('You must provide a valid callback.');
@@ -2328,7 +2328,7 @@ $local_time = time();
      * @return null
      * @throws \Exception
      */
-    public function kline($symbols, string $interval = "30m", callable $callback = null, $loop = null)
+    public function kline($symbols, string $interval = "30m", callable $callback = null, &$loop = NULL)
     {
         if (is_null($callback)) {
             throw new Exception("You must provide a valid callback");
@@ -2357,7 +2357,7 @@ $local_time = time();
             $connector($this->getWsEndpoint() . $endpoint)->then(function ($ws) use ($callback, $symbol, $loop, $endpoint, $interval) {
                 $ws->on('message', function ($data) use ($ws, $loop, $callback, $endpoint) {
                     if ($this->subscriptions[$endpoint] === false) {
-                        $loop->stop();
+                        $ws->close();
                         return;
                     }
                     $json = json_decode($data, true);
@@ -2561,7 +2561,7 @@ $local_time = time();
      * @param $callback callable function closer that takes 2 arguments, $api and $ticker data
      * @return null
      */
-    public function bookTicker(string $symbol = NULL, callable $callback, $loop = NULL)
+    public function bookTicker(string $symbol = NULL, callable $callback, &$loop = NULL)
     {
         if(is_null($callback)){
           throw new Exception('You must provide a valid callback.');
