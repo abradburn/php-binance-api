@@ -2173,18 +2173,32 @@ $local_time = time();
      * print_r($ticker);
      * });
      *
-     * @param $symbol string optional symbol or false
+     * @param $symbols string optional symbol or false
      * @param $callback callable closure
      * @return null
      */
-    public function ticker($symbol, callable $callback)
+    public function ticker($symbols, callable $callback, &$loop = NULL)
     {
+        if(is_null($callback)){
+          throw new Exception('You must provide a valid callback.');
+        }
+
+        $self_initialized = false;
+
+        if(is_null($loop)){
+          $self_initialized = true;
+          $loop = \React\EventLoop\Factory::create();
+        }
+
+        $react = new \React\Socket\Connector($loop);
+        $connector = new \Ratchet\Client\Connector($loop, $react);
+
         $endpoint = $symbol ? strtolower($symbol) . '@ticker' : '!ticker@arr';
         $this->subscriptions[$endpoint] = true;
 
         // @codeCoverageIgnoreStart
         // phpunit can't cover async function
-        \Ratchet\Client\connect($this->getWsEndpoint() . $endpoint)->then(function ($ws) use ($callback, $symbol, $endpoint) {
+        $connector($this->getWsEndpoint() . $endpoint)->then(function ($ws) use ($callback, $symbol, $endpoint) {
             $ws->on('message', function ($data) use ($ws, $callback, $symbol, $endpoint) {
                 if ($this->subscriptions[$endpoint] === false) {
                     //$this->subscriptions[$endpoint] = null;
@@ -2205,10 +2219,12 @@ $local_time = time();
             $ws->on('close', function ($code = null, $reason = null) {
                 // WPCS: XSS OK.
                 echo "ticker: WebSocket Connection closed! ({$code} - {$reason})" . PHP_EOL;
+                $loop->stop();
             });
         }, function ($e) {
             // WPCS: XSS OK.
             echo "ticker: Could not connect: {$e->getMessage()}" . PHP_EOL;
+            $loop->stop();
         });
         // @codeCoverageIgnoreEnd
     }
